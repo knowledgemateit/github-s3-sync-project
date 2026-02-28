@@ -1,0 +1,83 @@
+🚀 GitHub-to-S3 Automated Sync
+This project automates the deployment of static websites. By connecting GitHub to AWS CodePipeline, every git push triggers an automated deployment to an S3 bucket configured for static hosting.
+
+🏗 Architecture Overview
+Source: Developer pushes code to the main branch on GitHub.
+
+Trigger: AWS CodeStar Connection detects the change.
+
+Deploy: CodePipeline fetches the code and extracts it directly into the S3 bucket.
+
+Live: The website is immediately updated and accessible via the S3 endpoint.
+
+📋 Prerequisites
+An AWS Account with administrative privileges.
+
+A GitHub Repository containing your web assets (e.g., index.html, style.css).
+
+🛠 Phase 1: Prepare the S3 Destination
+1. Create the Bucket
+Open the S3 Console.
+
+Create a bucket with a unique name (e.g., my-github-website-2026).
+
+2. Configure Settings
+Public Access: Uncheck Block all public access and acknowledge the warning.
+
+Static Hosting: * Navigate to Properties -> Static website hosting.
+
+Select Enable.
+
+Set index.html as the Index document.
+
+3. Apply Bucket Policy
+Copy this JSON into Permissions -> Bucket Policy. Replace YOUR-BUCKET-NAME with your actual bucket name:
+
+JSON
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicReadGetObject",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::YOUR-BUCKET-NAME/*"
+        }
+    ]
+}
+🔗 Phase 2: Create the Pipeline
+1. Pipeline Settings
+Pipeline Name: GitHub-to-S3-Sync.
+
+Service Role: Select New service role.
+
+2. Source Stage (GitHub)
+Provider: GitHub (Version 2).
+
+Connection: Follow the prompts to Connect to GitHub and authorize AWS.
+
+Repository & Branch: Select your target repo and the main branch.
+
+3. Build Stage
+Click Skip build stage.
+
+Note: Only required for frameworks requiring compilation (React, Vue, etc.).
+
+4. Deploy Stage
+Provider: Amazon S3.
+
+Bucket: Select your website bucket.
+
+Deployment Options: IMPORTANT: Check the box Extract file before deploying.
+
+⚠️ Troubleshooting
+403 Forbidden: Ensure the S3 Bucket Policy was saved correctly and "Block all public access" is turned OFF.
+
+Files not updating: Check the CodePipeline Console to ensure the latest "Source" step succeeded.
+
+Zip file in S3: If you see a .zip file in your bucket instead of your code, you forgot to check Extract file before deploying in the Deploy stage.
+
+✅ Final Result
+Once the pipeline shows a green Succeeded status, find your URL in the S3 Properties tab under Static website hosting.
